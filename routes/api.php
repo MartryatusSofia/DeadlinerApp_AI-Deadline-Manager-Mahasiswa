@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
 
 // Public
@@ -17,4 +18,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Course
     Route::apiResource('courses', CourseController::class);
+
+    // Task
+    Route::apiResource('tasks', TaskController::class);
+    Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus']);
 });
