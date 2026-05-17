@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\AIService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,6 +13,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+        $this->app->singleton(AIService::class, function ($app) {
+            return new AIService();
+        });
     }
 
     /**

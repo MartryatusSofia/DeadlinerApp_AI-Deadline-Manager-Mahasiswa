@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Services\AIService;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
+    public function __construct(private AIService $aiService) {}
+
     public function index(Request $request)
     {
         $tasks = $request->user()
@@ -38,8 +41,12 @@ class TaskController extends Controller
 
         $task = $request->user()->tasks()->create($validated);
 
+        // Auto AI analyze
+        $this->aiService->analyzeTask($task);
+        $task->refresh();
+
         return response()->json([
-            'message' => 'Tugas berhasil ditambahkan',
+            'message' => 'Tugas berhasil ditambahkan dan dianalisis AI',
             'task'    => $task->load('course'),
         ], 201);
     }
@@ -72,6 +79,10 @@ class TaskController extends Controller
 
         $task->update($validated);
 
+        // Re-analyze setelah update
+        $this->aiService->analyzeTask($task);
+        $task->refresh();
+
         return response()->json([
             'message' => 'Tugas berhasil diperbarui',
             'task'    => $task->load('course'),
@@ -86,9 +97,7 @@ class TaskController extends Controller
 
         $task->delete();
 
-        return response()->json([
-            'message' => 'Tugas berhasil dihapus'
-        ]);
+        return response()->json(['message' => 'Tugas berhasil dihapus']);
     }
 
     public function updateStatus(Request $request, Task $task)
@@ -104,8 +113,23 @@ class TaskController extends Controller
         $task->update(['status' => $request->status]);
 
         return response()->json([
-            'message' => 'Status tugas berhasil diperbarui',
+            'message' => 'Status berhasil diperbarui',
             'task'    => $task,
+        ]);
+    }
+
+    public function analyze(Request $request, Task $task)
+    {
+        if ($task->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Tidak diizinkan'], 403);
+        }
+
+        $this->aiService->analyzeTask($task);
+        $task->refresh();
+
+        return response()->json([
+            'message' => 'Analisis AI selesai',
+            'task'    => $task->load('course'),
         ]);
     }
 }

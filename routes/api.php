@@ -22,4 +22,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Task
     Route::apiResource('tasks', TaskController::class);
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus']);
+    Route::post('/tasks/{task}/analyze', [TaskController::class, 'analyze']);
 });
